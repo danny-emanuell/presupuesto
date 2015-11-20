@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="presupuesto">
+  <head>
+    <meta charset="UTF-8"/>
+    <title></title>
+    <link rel="stylesheet" href="./css/bootstrap/css/bootstrapmain.css"/>
+    <link rel="stylesheet" href="./css/app.css"/>
+  </head>
+  <body ng-controller="mainCtrl">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="jumbotron">
+          <div class="panel panel-default">
+            <div class="panel-body"> 
+              <h1>Presupuesto</h1>
+              <p>Sistema para crear un presupuesto familiar, no usa ningun tipo de base de datos,todo se almacena en el cache del navegador, fue hecho con <a href="https://angularjs.org/" target="_blank">AngularJS</a> y <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a> .</p>
+            </div>
+            <div class="panel-footer">
+              <h5>correo: <a href="mailto:dannyoemanuell@gmail.com"> dannyoemanuell@gmail.com</a></h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <h2>INGRESOS</h2>
+          <div class="formulario_ingreso">
+            <form ng-submit="addIngreso(ingreso)" name="formularioIngreso" class="form-inline">
+              <div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" placeholder="Descripción Ingreso" ng-model="ingreso.description" required="required" class="form-control"/>
+              </div>
+              <div class="input-group"><span class="input-group-addon">Q.</span>
+                <input type="number" name="montoingreso" placeholder="Monto" ng-model="ingreso.monto" required="required" class="form-control"/>
+              </div>
+              <button class="btn btn-success"><i class="glyphicon glyphicon-plus"></i></button>
+            </form>
+          </div>
+          <div class="tabla_resultado">
+            <table class="table table-striped table-hover">
+              <thead style="font-size:1.3em">
+                <tr>
+                  <th>#</th>
+                  <th>Descripción</th>
+                  <th> Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="ingreso in ingresos">
+                  <td>{{ingreso._id + 1}}</td>
+                  <td>{{ingreso.description}}</td>
+                  <td>Q. {{ingreso.monto}}</td>
+                  <td ng-click="removeIngreso($index)"><i class="glyphicon glyphicon-remove"></i></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" style="text-align:right">Total</td>
+                  <td>Q. {{sumaIngresos()}}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h2>EGRESOS</h2>
+          <div class="formulario_ingreso">
+            <form ng-submit="addCategory()" class="form-inline">
+              <div class="input-group">
+                <input type="text" placeholder="Agregar Categoria" ng-model="newcategory" required="required" class="form-control"/>
+              </div>
+              <button class="btn btn-success"><i class="glyphicon glyphicon-plus"></i></button>
+            </form><br/>
+            <form ng-submit="addEgresos()" class="form-inline">
+              <div class="input-group"><span class="input-group-addon">Categoria</span>
+                <select ng-options="egreso as egreso.category for egreso in egresos" ng-model="selectedCategory" class="form-control col-md-12"></select>
+              </div><br/><br/>
+              <div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" placeholder="Descripción Egreso" ng-model="newegreso" required="required" class="form-control"/>
+              </div>
+              <div class="input-group"><span class="input-group-addon">Q.</span>
+                <input type="number" placeholder="Monto" ng-model="montoegreso" required="required" class="form-control"/>
+              </div>
+              <button class="btn btn-success"><i class="glyphicon glyphicon-plus"></i></button>
+            </form>
+          </div><br/>
+          <div class="tabla_resultado_egresos">
+            <div id="accordion" role="tablist" aria-multiselectable="true" ng-repeat="egreso in egresos" ng-show="egreso.show" class="panel-group">
+              <div class="panel panel-default">
+                <div role="tab" id="headingOne" class="panel-heading"><a role="button" data-toggle="collapse" data-present="#accordion" href="#{{egreso.category}}" aria-expanded="true" aria-controls="{{egreso.category}}">
+                    <h4 class="panel-title title_personal"><span style="color:#fff; font-size:1.3em">{{egreso.category}}</span><span style="float:right; color:#fff">Total: Q. {{egreso.total}}</span></h4></a></div>
+                <div id="{{egreso.category}}" role="tabpanel" aria-labelledby="headingOne" class="panel-collapse collapse in">
+                  <div class="panel-body">
+                    <table class="table table-striped table-hover">
+                      <thead style="font-size:1.3em">
+                        <tr>
+                          <th>Descripción</th>
+                          <th> Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr ng-repeat="item in egreso.items">
+                          <td>{{item.description}}</td>
+                          <td>{{item.monto}}</td>
+                          <td ng-click="delEgreso(egreso, item._id)"><i class="glyphicon glyphicon-remove"></i></td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="2" style="text-align:right;font-weight:bolder">Total</td>
+                          <td style="font-weight:bolder">{{egreso.total}}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row jumbotron">
+        <h2>Resumen...</h2>
+        <div class="col-md-12">
+          <table class="table table-striped table-hover">
+            <thead style="font-size:1.3em">
+              <tr>
+                <th>#</th>
+                <th>Descripción</th>
+                <th> Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>TOTAL INGRESOS</td>
+                <td>Q. {{sumaIngresos()}}</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>TOTAL EGRESOS</td>
+                <td>Q. {{sumaEgresos()}}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" style="text-align:right">Total</td>
+                <td ng-if="totales() &lt; 0" style="color:#e74c3c;font-size:1.3em">Q.{{ totales()}}</td>
+                <td ng-if="totales() &gt;= 0" style="font-size:1.3em">Q. {{totales()}}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="./js/angular.min.js"></script>
+    <script src="./js/angular-local-storage.js"></script>
+    <script src="./js/jquery-1.11.3.js"></script>
+    <script src="./css/bootstrap/js/bootstrap.js"></script>
+    <script src="./js/app.js"></script>
+  </body>
+</html>
